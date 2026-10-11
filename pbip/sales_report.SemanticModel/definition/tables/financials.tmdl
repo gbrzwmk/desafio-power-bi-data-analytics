@@ -1,0 +1,477 @@
+table financials
+	lineageTag: e8984e47-1d48-449a-b98c-c9c571939304
+
+	measure 'Máximo sold' = MAX(financials[Units Sold])
+		lineageTag: 05bbd9e2-2283-44c8-810d-e116eb28cbc9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'total sales' = ```
+			SUMX(financials, financials[ Sales]) 
+			```
+		lineageTag: bc6fc5a1-40d1-46be-90a2-ba36530b5c45
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'TOP3 PRODUCT' = ```
+			CALCULATE(
+			    [total sales],
+			    TOPN(
+			        3, 
+			        ALL(financials[Product]),
+			        [total sales]), 
+			    VALUES(financials[Product])
+			    )
+			```
+		lineageTag: 43bbe98a-a342-4c2c-bde1-697a4946bf36
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'total de vendidos' = SUMX(financials, financials[Units Sold])
+		lineageTag: fc896139-301d-48ca-a813-a4f4ce2228be
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure outlier = ```
+			CALCULATE( 
+			    [total de vendidos],
+			    FILTER(
+			        VALUES(financials[Product]),
+			        COUNTROWS( FILTER(financials, [total de vendidos] >= 150)) > 0
+			    )
+			)
+			```
+		lineageTag: 835bf19a-ad1f-419a-9265-8b497eaa1b1d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure Meta = [total sales]*0.8
+		lineageTag: 06d85844-29df-42c6-9092-dffaa42794dc
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'avg sales' = AVERAGEX(financials, financials[ Sales])
+		lineageTag: 2efa1e5b-e370-4e70-be5f-d03de2bdab39
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Profit' = SUM(financials[Profit])
+		formatString: #,0.00
+		lineageTag: d26b92e5-c320-4001-a962-c27df72c2c26
+
+	measure 'Total Discounts' = SUM(financials[Discounts])
+		formatString: #,0.00
+		lineageTag: 51c35f87-45cf-432b-a69f-8a0c89ce5ef7
+
+	measure 'Margem de Lucro' = DIVIDE([Total Profit], [total sales])
+		formatString: 0.0%
+		lineageTag: 3167181e-b313-443f-a9c2-d822168e5087
+
+	measure 'Ticket Médio' = DIVIDE([total sales], COUNTROWS(financials))
+		formatString: #,0.00
+		lineageTag: fd8055e8-ccdf-4401-a180-b36432793637
+
+	measure 'Qtd Países' = DISTINCTCOUNT(financials[Country])
+		formatString: 0
+		lineageTag: 4a8bcbe1-0bb1-4336-ae9a-eec77c9881b1
+
+	measure 'Ranking Produto' = RANKX(ALL(financials[Product]), [total sales])
+		formatString: 0
+		lineageTag: 3197e8d5-a502-4e47-af9f-a22b0746a9ba
+
+	measure 'Vendas TOP3 (%)' = DIVIDE(CALCULATE([total sales], TOPN(3, ALL(financials[Product]), [total sales])), CALCULATE([total sales], ALL(financials[Product])))
+		formatString: 0.0%
+		lineageTag: 9a0c3eb1-5b7d-416f-aadb-1de832f9e2b0
+
+	measure 'Unidades Médias por Mês' = AVERAGEX(VALUES(financials[Month Name]), [total de vendidos])
+		formatString: #,0
+		lineageTag: 4494a9a9-323b-4390-a35b-e040dd93fa0c
+
+	column Segment
+		dataType: string
+		lineageTag: 954806ab-97cd-4ae9-9286-ab09a9d16b60
+		summarizeBy: none
+		sourceColumn: Segment
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"financials","TableItemName":"Segmentos agrupados","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column Country
+		dataType: string
+		lineageTag: 54612b49-8a4f-430f-a154-30580fb14054
+		summarizeBy: none
+		sourceColumn: Country
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"financials","TableItemName":"Continentes","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column Product
+		dataType: string
+		lineageTag: 1269f721-72c0-4d31-bbf7-9172ac0d2952
+		summarizeBy: none
+		sourceColumn: Product
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Discount Band'
+		dataType: string
+		lineageTag: e0eb8efd-f0b7-4218-bfaa-6450cc51b837
+		summarizeBy: none
+		sourceColumn: Discount Band
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Units Sold'
+		dataType: double
+		lineageTag: 3d6c4600-4b8b-4263-b0aa-344b5ea87b88
+		summarizeBy: sum
+		sourceColumn: Units Sold
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"financials","TableItemName":"Buckets","ObjectType":4},"LinkType":"UsedInGroup"},{"LinkTarget":{"TableName":"financials","TableItemName":"Profit (clusters)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column 'Manufacturing Price'
+		dataType: int64
+		formatString: 0
+		lineageTag: 395f7470-d681-4105-880f-3f99a5716a4c
+		summarizeBy: sum
+		sourceColumn: Manufacturing Price
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sale Price'
+		dataType: int64
+		formatString: 0
+		lineageTag: e34253a8-c03b-4411-a686-7b2e4e182492
+		summarizeBy: sum
+		sourceColumn: Sale Price
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Gross Sales'
+		dataType: double
+		lineageTag: 0aff51ef-7cf1-4bc6-854a-6356542a4b38
+		summarizeBy: sum
+		sourceColumn: Gross Sales
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Discounts
+		dataType: double
+		lineageTag: 514b322e-55d7-489b-a0db-429b0dc4c212
+		summarizeBy: sum
+		sourceColumn: Discounts
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ' Sales'
+		dataType: double
+		lineageTag: facd6393-17d2-4339-933f-05c84a4912c8
+		summarizeBy: sum
+		sourceColumn: " Sales"
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"financials","TableItemName":"Profit (clusters)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column COGS
+		dataType: double
+		lineageTag: 45695d1c-7f79-4c9e-918c-f0c25c5d2e25
+		summarizeBy: sum
+		sourceColumn: COGS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Profit
+		dataType: double
+		lineageTag: 2e0ba59f-43bb-4aa2-9699-0bd652b3976f
+		summarizeBy: sum
+		sourceColumn: Profit
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"financials","TableItemName":"Profit (clusters)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c728145d-a15b-47c7-b9f2-1eb39557ef10
+		summarizeBy: none
+		sourceColumn: Date
+
+		variation Variation
+			isDefault
+			relationship: 82e9dfc7-4aea-4221-93df-807123b634fa
+			defaultHierarchy: LocalDateTable_aa0b335b-73c1-4fbd-9ab3-8e1a1430d91d.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Month Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 99601a3c-e10b-44e6-b35f-769b6489c9a9
+		summarizeBy: sum
+		sourceColumn: Month Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Name'
+		dataType: string
+		lineageTag: 1047ad53-1821-40ea-9fb4-97e22a798364
+		summarizeBy: none
+		sourceColumn: Month Name
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"financials","TableItemName":"Semestres","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: aa033e80-68df-407f-be3a-1b618e0dc626
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Buckets = ```
+			VAR __Count = 10
+			
+			VAR __Min = MIN('financials'[Units Sold])
+			
+			VAR __Max = MAX('financials'[Units Sold])
+			
+			VAR __Difference = (__Max - __Min)
+			
+			VAR __Size = IF(__Difference > 0, __Difference / __Count, 1)
+			
+			VAR __BinNumber = 
+			  IF(
+			    ISBLANK('financials'[Units Sold]),
+			    BLANK(),
+			    ROUNDDOWN(('financials'[Units Sold] - __Min) / __Size, 0)
+			  )
+			
+			RETURN
+			  IF(
+			    ISBLANK('financials'[Units Sold]),
+			    BLANK(),
+			    __Min + (MIN(__BinNumber, __Count - 1) * __Size)
+			  )
+			```
+		lineageTag: 6ce2c8bd-07d0-4492-9764-18d75bf2d2e8
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "financials"
+				          }
+				        },
+				        "Property": "Units Sold"
+				      }
+				    }
+				  ]
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"f","Entity":"financials"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Units Sold"}}],"BinItem":{"Expression":{"Member":{"Expression":{"Discretize":{"Expression":{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Units Sold"}},"Count":10}},"Member":"Min"}}}}
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Segmentos agrupados' =
+			SWITCH(
+			  TRUE,
+			  ISBLANK('financials'[Segment]),
+			  "(Em branco)",
+			  'financials'[Segment] IN {"Government",
+			    "Small Business"},
+			  "Destaque",
+			  "Outro"
+			)
+		lineageTag: 16c882e4-36a7-43dd-b736-6eaf3830389c
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "financials"
+				          }
+				        },
+				        "Property": "Segment"
+				      }
+				    }
+				  ]
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"f","Entity":"financials"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Segment"}}],"GroupItems":[{"DisplayName":"(Em branco)","BlankDefaultPlaceholder":true},{"DisplayName":"Destaque","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Segment"}}],"Values":[[{"Literal":{"Value":"'Government'"}}],[{"Literal":{"Value":"'Small Business'"}}]]}}},{"DisplayName":"Outro"}]}
+
+		annotation SummarizationSetBy = Automatic
+
+	column Continentes =
+			SWITCH(
+			  TRUE,
+			  ISBLANK('financials'[Country]),
+			  "(Em branco)",
+			  'financials'[Country] IN {"United States of America",
+			    "Canada"},
+			  "America do Norte",
+			  'financials'[Country] IN {"France",
+			    "Germany"},
+			  "Europa",
+			  "Outro"
+			)
+		lineageTag: 1010894d-0925-4e44-ba08-0373eddedd77
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "financials"
+				          }
+				        },
+				        "Property": "Country"
+				      }
+				    }
+				  ]
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"f","Entity":"financials"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Country"}}],"GroupItems":[{"DisplayName":"(Em branco)","BlankDefaultPlaceholder":true},{"DisplayName":"America do Norte","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Country"}}],"Values":[[{"Literal":{"Value":"'United States of America'"}}],[{"Literal":{"Value":"'Canada'"}}]]}}},{"DisplayName":"Europa","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Country"}}],"Values":[[{"Literal":{"Value":"'France'"}}],[{"Literal":{"Value":"'Germany'"}}]]}}},{"DisplayName":"Outro"}]}
+
+		annotation SummarizationSetBy = Automatic
+
+	column Semestres =
+			SWITCH(
+			  TRUE,
+			  ISBLANK('financials'[Month Name]),
+			  "(Em branco)",
+			  'financials'[Month Name] IN {"April",
+			    "February",
+			    "January",
+			    "June",
+			    "March",
+			    "May"},
+			  "Primeiro Semestre ",
+			  'financials'[Month Name] IN {"August",
+			    "December",
+			    "July",
+			    "November",
+			    "October",
+			    "September"},
+			  "Segundo Semestre",
+			  'financials'[Month Name]
+			)
+		lineageTag: f1d1f434-51b4-4862-a47e-f04a41d44acc
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "financials"
+				          }
+				        },
+				        "Property": "Month Name"
+				      }
+				    }
+				  ]
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"f","Entity":"financials"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Month Name"}}],"GroupItems":[{"DisplayName":"(Em branco)","BlankDefaultPlaceholder":true},{"DisplayName":"Primeiro Semestre ","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Month Name"}}],"Values":[[{"Literal":{"Value":"'April'"}}],[{"Literal":{"Value":"'February'"}}],[{"Literal":{"Value":"'January'"}}],[{"Literal":{"Value":"'June'"}}],[{"Literal":{"Value":"'March'"}}],[{"Literal":{"Value":"'May'"}}]]}}},{"DisplayName":"Segundo Semestre","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Month Name"}}],"Values":[[{"Literal":{"Value":"'August'"}}],[{"Literal":{"Value":"'December'"}}],[{"Literal":{"Value":"'July'"}}],[{"Literal":{"Value":"'November'"}}],[{"Literal":{"Value":"'October'"}}],[{"Literal":{"Value":"'September'"}}]]}}}]}
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"financials","TableItemName":"Profit (clusters)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	/// Clusters para Profit
+	column 'Profit (clusters)' = ```
+			VAR __ClusterValue = 
+			  LOOKUPVALUE(
+			    'ClusterMappingTable'[ClusterId],
+			    'ClusterMappingTable'[Profit],
+			    'financials'[Profit]
+			  )
+			
+			RETURN
+			  SWITCH(
+			    __ClusterValue,
+			    BLANK(),
+			    BLANK(),
+			    CONCATENATE("Cluster", __ClusterValue)
+			  )
+			```
+		lineageTag: b38c15d4-8535-4cb2-bc57-85fa77003075
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "financials"
+				          }
+				        },
+				        "Property": "Profit"
+				      }
+				    }
+				  ]
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"f","Entity":"financials"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Profit"}}],"PartitionTable":{"Definition":{"TableDefinition":{"Version":2,"From":[{"Name":"f","Entity":"financials"}],"Where":[{"Condition":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Semestres"}}],"Values":[[{"Literal":{"Value":"'Primeiro Semestre '"}}]]}}}],"OrderBy":[],"Select":[{"Column":{"Expression":{"TransformTableRef":{"Source":"output0"}},"Property":"financials.Profit"},"Name":"financials.Profit"},{"Column":{"Expression":{"TransformTableRef":{"Source":"output0"}},"Property":"clusterId"},"Name":"clusterId"}],"GroupBy":[],"Transform":[{"Name":"KMeansClustering","Algorithm":"KMeansClustering","Input":{"Parameters":[{"Literal":{"Value":"3L"},"Name":"NumberOfClusters"}],"Table":{"Name":"input0","Columns":[{"Role":"Attribute","Expression":{"Aggregation":{"Function":0,"Expression":{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":" Sales"}}},"Name":"Sum(financials. Sales)"}},{"Role":"Attribute","Expression":{"Aggregation":{"Function":0,"Expression":{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Units Sold"}}},"Name":"Sum(financials.Units Sold)"}},{"Role":"Item","Expression":{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Profit"},"Name":"financials.Profit"}}]}},"Output":{"Table":{"Name":"output0","Columns":[{"Expression":{"Column":{"Expression":{"TransformTableRef":{"Source":"input0"}},"Property":"financials.Profit"},"Name":"financials.Profit"}},{"Role":"Series","Expression":{"TransformOutputRoleRef":{"Role":"ClusterId"},"Name":"clusterId"}}]}}}]},"ItemIdColumns":["financials.Profit"],"PartitionIdColumn":"clusterId","Partitions":[{"PartitionIds":[{"Literal":{"Value":"null"}}]}],"DefaultPartitionPrefix":"Cluster"},"Result":{"TableName":"ClusterMappingTable","PartitionIdColumn":"ClusterId","ItemIdMappings":[[{"PartitionTableColumn":{"Column":{"Expression":{"SourceRef":{"Entity":"ClusterMappingTable"}},"Property":"Profit"}},"SourceTableColumn":{"Column":{"Expression":{"SourceRef":{"Entity":"financials"}},"Property":"Profit"}}}]]}}}
+
+		annotation SummarizationSetBy = Automatic
+
+	partition financials-06609c2a-c07e-4d80-a8f1-bc99664c710f = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook(File.Contents("C:\Users\julia\OneDrive\Documentos\GitHub\power_bi_analyst\Módulo 4\Desafios de Projeto\Financial Sample.xlsx"), null, true),
+				    financials_Table = Fonte{[Item="financials",Kind="Table"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(financials_Table,{{"Segment", type text}, {"Country", type text}, {"Product", type text}, {"Discount Band", type text}, {"Units Sold", type number}, {"Manufacturing Price", Int64.Type}, {"Sale Price", Int64.Type}, {"Gross Sales", type number}, {"Discounts", type number}, {" Sales", type number}, {"COGS", type number}, {"Profit", type number}, {"Date", type date}, {"Month Number", Int64.Type}, {"Month Name", type text}, {"Year", Int64.Type}})
+				in
+				    #"Tipo Alterado"
+
+	annotation PBI_ResultType = Exception
+
+	annotation PBI_NavigationStepName = Navegação
+
