@@ -1,0 +1,57 @@
+Máximo sold =
+MAX(financials[Units Sold])
+
+total sales =
+SUMX(financials, financials[ Sales]) 
+
+TOP3 PRODUCT =
+CALCULATE(
+    [total sales],
+    TOPN(
+        3, 
+        ALL(financials[Product]),
+        [total sales]), 
+    VALUES(financials[Product])
+    )
+
+total de vendidos =
+SUMX(financials, financials[Units Sold])
+
+outlier =
+CALCULATE( 
+    [total de vendidos],
+    FILTER(
+        VALUES(financials[Product]),
+        COUNTROWS( FILTER(financials, [total de vendidos] >= 150)) > 0
+    )
+)
+
+Meta =
+[total sales]*0.8
+
+avg sales =
+AVERAGEX(financials, financials[ Sales])
+
+Total Profit =
+SUM(financials[Profit])
+
+Total Discounts =
+SUM(financials[Discounts])
+
+Margem de Lucro =
+DIVIDE([Total Profit], [total sales])
+
+Ticket Médio =
+DIVIDE([total sales], COUNTROWS(financials))
+
+Qtd Países =
+DISTINCTCOUNT(financials[Country])
+
+Ranking Produto =
+RANKX(ALL(financials[Product]), [total sales])
+
+Vendas TOP3 (%) =
+DIVIDE(CALCULATE([total sales], TOPN(3, ALL(financials[Product]), [total sales])), CALCULATE([total sales], ALL(financials[Product])))
+
+Unidades Médias por Mês =
+AVERAGEX(VALUES(financials[Month Name]), [total de vendidos])
